@@ -1,0 +1,193 @@
+---
+title: Do children born to teenage parents have lower adult intelligence? A prospective
+  birth cohort study
+author: "Tiffany Pang"
+date: "5/18/2017"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+---
+
+***Reference link: *** https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5344312/
+
+## Study setting and Participants described in paper
+
+The study investigates the long-term cognitive status (IQ) among 21 year adult offspring born to teen-age parents. This population study is a prospective birth cohort sub-sample derived from the Mater University Study of Pregnancy, comprising of 2643 mother-offspring pair recruited during 1981 to 1983 in Brisbane, Australia. Baseline data were collected at the mother’s first obstetric clinic visit (mean 18 weeks gestation) and follow up data were gathered prospectively on mothers and offspring at 3–5 days postpartum, six months, five, 14, and 21 years of age. Offspring IQ was measured using the Peabody Picture Vocabulary Test at 21 year.
+
+## Introduction
+
+This Data Simulation Project references the above link and simulates the data based on the paper. Teenage motherhood has been associated with a wide variety of negative offspring outcomes including poorer cognitive development. The paper concludes that offspring born to teenage mothers (<20 years) have -3.0 (95% Confidence Interval (CI): -4.3, -1.8) points lower IQ in comparison to children born to mothers 20 years. Adjustment for a range of confounding and mediating factors including parental socioeconomic status, maternal IQ, maternal smoking and binge drinking in pregnancy, birthweight, breastfeeding and parenting style attenuates the association, though the effect remains statistically significant (-1.4 IQ points; 95% CI: -2.8,- 0.1). Interestingly, teenage fatherhood is not associated with adult offspring IQ, when adjusted for maternal age. 
+
+### Features in the dataset
+
+1. Living with same partner as birth of child (factor: yes, no)
+2. Planned pregnancy (factor: yes, no)
+3. Child gender (factor: male, female)
+4. Maternal education (factor: incomplete high, complete high, post high)
+5. Paternal education (factor: incomplete high, complete high, post high)
+6. Family income (factor: low, med, high)
+7. Smoking during pregnancy (factor: never, few, many)
+8. Binge drinking (factor: yes, no)
+9. Maternal depression (factor: yes, no)
+10. Breastfeeding (factor: never, < 4 months, ≥4 months)
+11. Child attended at preschool (factor: yes, no)
+12. Mother-child interaction (factor: yes, no)
+13. Physical punishment (factor: yes, no)
+14. Explaining for child bad behavior (factor: yes, no)
+15. Maternal IQ (96.2±8.4 for <20 years maternal age, 97.0±10.6 for ≥20 years maternal age)
+16. Office IQ at 21y (100.5±10.0 for <20 years maternal age, 103.8±10.3 for ≥20 years maternal age)
+17. Birth weight in kg (3.3±0.5 for <20 years maternal age, 3.4±0.5 for ≥20 years maternal age)
+18. Maternal Age 
+
+### Confounders and Mediators 
+
+![](confounders.png)
+
+
+### The following code chunk is used to create the model data
+
+```{r warning=FALSE, message=FALSE}
+
+library(truncnorm)
+
+# statistical data for maternal age <20 years
+generate_dataset_teen <- function(N){
+  # categorical variables
+  same_partner <- sample(c("N", "Y"), N, replace=TRUE, prob=c(.527, .473))
+  planned_preg <- sample(c("Y", "N"), N, replace=TRUE, prob=c(.221, .779))
+  child_sex <- sample(c("M", "F"), N, replace=TRUE, prob=c(.485, .515))
+  m_edu <- sample(c("Incom_high", "Comp_high", "Post_high"), N, replace=TRUE, 
+                  prob=c(.202, .693, .105))
+  p_edu <- sample(c("Incom_high", "Comp_high", "Post_high"), N, replace=TRUE, 
+                  prob=c(.171, .709, .12))
+  income <- sample(c("Low", "Med", "High"), N, replace=TRUE, 
+                   prob=c(.544, .301, .155))
+  smoke <- sample(c("Never", "Few", "Many"), N, replace=TRUE, 
+                  prob=c(.508, .271, .221))
+  drink <- sample(c("N", "Y"), N, replace=TRUE, prob=c(.8, .2))
+  depression <- sample(c("N", "Y"), N, replace=TRUE, prob=c(.641, .359))
+  breastfeed <- sample(c("Never", "<4months", "≥4months"), N, replace=TRUE, 
+                       prob=c(.249, .50, .252))
+  preschool <- sample(c("Y", "N"), N, replace=TRUE, prob=c(.625, .375))
+  interaction <- sample(c("Always", "Not_always"), N, replace=TRUE, prob=c(.885, .115))
+  phys_punishment <- sample(c("Always", "Sometimes", "Never"), N, replace=TRUE, 
+                            prob=c(.066, .822, .113))
+  bad_behaviors <- sample(c("Always", "Not_always"), N, replace=TRUE, prob=c(.465, .535))
+  # continuous variables 
+  maternal_iq <- runif(N, min=(96.2-8.4), max=(96.2+8.4))
+  offspring_iq <- runif(N, min=(100.5-10), max=(100.5+10))
+  birth_weight <- runif(N, min=(3.3-.5), max=(3.3+.5))
+  mom_age <- rtruncnorm(n=363, a=12, b=19.9, mean=18, sd=2)
+  return(data.frame(same_partner,planned_preg,child_sex,m_edu,p_edu,income,smoke,drink,depression,
+        breastfeed,preschool,interaction,phys_punishment,bad_behaviors,maternal_iq,offspring_iq,birth_weight,mom_age))
+}
+
+# dataframe for maternal age <20 years
+df_teen <- generate_dataset_teen(363)
+
+# statistical data for maternal age ≥20 years
+generate_dataset_adult <- function(N){
+  # categorical variables
+  same_partner <- sample(c("N", "Y"), N, replace=TRUE, prob=c(.276, .724))
+  planned_preg <- sample(c("Y", "N"), N, replace=TRUE, prob=c(.519, .481))
+  child_sex <- sample(c("M", "F"), N, replace=TRUE, prob=c(.493, .507))
+  m_edu <- sample(c("Incom_high", "Comp_high", "Post_high"), N, replace=TRUE, 
+                  prob=c(.153, .633, .214))
+  p_edu <- sample(c("Incom_high", "Comp_high", "Post_high"), N, replace=TRUE, 
+                  prob=c(.174, .584, .242))
+  income <- sample(c("Low", "Med", "High"), N, replace=TRUE, 
+                   prob=c(.263, .410, .326))
+  smoke <- sample(c("Never", "Few", "Many"), N, replace=TRUE, 
+                  prob=c(.669, .141, .190))
+  drink <- sample(c("N", "Y"), N, replace=TRUE, prob=c(.795, .206))
+  depression <- sample(c("N", "Y"), N, replace=TRUE, prob=c(.835, .165))
+  breastfeed <- sample(c("Never", "<4months", "≥4months"), N, replace=TRUE, 
+                       prob=c(.174, .356, .470))
+  preschool <- sample(c("Y", "N"), N, replace=TRUE, prob=c(.648, .352))
+  interaction <- sample(c("Always", "Not_always"), N, replace=TRUE, prob=c(.857, .143))
+  phys_punishment <- sample(c("Always", "Sometimes", "Never"), N, replace=TRUE, 
+                            prob=c(.076, .723, .201))
+  bad_behaviors <- sample(c("Always", "Not_always"), N, replace=TRUE, prob=c(.548, .452))
+  
+  # continuous variables
+  maternal_iq <- runif(N, min=(97.0-10.6), max=(97.0+10.6))
+  offspring_iq <- runif(N, min=(103.8-10.3), max=(103.8+10.3))
+  birth_weight <- runif(N, min=(3.4-.5), max=(3.4+.5))
+  mom_age <- rtruncnorm(n=2280, a=20, b=40, mean=25, sd=14) # min age is set at 20, and max age at 40
+  
+  return(data.frame(same_partner,planned_preg,child_sex,m_edu,p_edu,income,smoke,drink,depression,breastfeed,preschool,interaction,phys_punishment,bad_behaviors,maternal_iq,offspring_iq,birth_weight,mom_age))
+}
+
+# dataframe for maternal age ≥20 years
+df_adult <- generate_dataset_adult(2280)
+```
+
+```{r warning=FALSE, message=FALSE}
+# adding outliers 
+df_adult$mom_age[500] <- 43
+df_adult$mom_age[1026] <- 47
+df_adult$offspring_iq[4] <- 88
+df_adult$offspring_iq[20] <- 90
+df_adult$offspring_iq[40] <- 117
+df_adult$offspring_iq[25] <- 114
+df_teen$offspring_iq[5] <- 84
+df_teen$offspring_iq[8] <- 82
+df_teen$offspring_iq[44] <- 116
+df_teen$offspring_iq[26] <- 119
+```
+
+```{r warning=FALSE, message=FALSE}
+# combine dataframe of df_teen and df_adult
+df <- rbind(df_teen, df_adult)
+df$maternal.age.level <- factor(rep("teens", nrow(df)), ordered=T, levels =c("teens", "equal or older than 20yrs"))
+df$maternal.age.level[df$mom_age>=20] <- "equal or older than 20yrs"
+
+summary(df)
+```
+
+```{r warning=FALSE}
+# Histogram of Maternal Age
+hist(df$mom_age)
+```
+
+```{r warning=FALSE, message=FALSE}
+library(ggplot2)
+# Scatter plot 
+ggplot(df, aes(x=mom_age,y=offspring_iq)) +
+  geom_point(aes(fill=mom_age, color=mom_age), size=2) +
+  labs(title="Offspring IQ as a Function of Maternal Age\n") + 
+  theme_bw() +
+  theme(plot.title=element_text(hjust=0.5, size=16, face="bold", color="darkgreen"))
+
+ggplot(df, aes(x=maternal.age.level,y=offspring_iq)) +
+  geom_boxplot(aes(fill=maternal.age.level, color=maternal.age.level), size=2) +
+  labs(title="Offspring IQ as a Function of Age Level\n") + 
+  theme_bw() +
+  theme(plot.title=element_text(hjust=0.5, size=16, face="bold", color="darkgreen"))
+```
+
+### Linear Regression Analysis 
+
+```{r warning=FALSE, message=FALSE}
+# model 1
+fit <- lm(offspring_iq ~ maternal.age.level, data=df)
+summary(fit)
+
+# model 1 + confounders
+fit1 <-
+  lm(
+    offspring_iq ~ maternal.age.level + maternal_iq + income + birth_weight +
+      child_sex + same_partner + planned_preg + depression + smoke + drink,
+    data = df
+  )
+summary(fit1)
+
+# model 1 + confounders + mediators 
+new_df <- subset(df, select = -mom_age)
+fit2 <- lm(offspring_iq ~ ., data = new_df)
+summary(fit2)
+```
+
+## Conclusion 
+
+With adjustment for confounders and mediators, although the association between maternal age and offspring IQ at 21years old remains significant, but it has attenuated to -1.4 points (95% CI: -2.8, -0.01). Given that an IQ between 90 and 110 is considered average, the reduction in 1.4 IQ points is quantitatively small. 
